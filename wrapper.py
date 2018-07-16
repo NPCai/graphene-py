@@ -33,7 +33,14 @@ class GrapheneExtract(object):
 		self.visited[hashId] = True
 		self.strbuild += " ( " + self.json[hashId]['arg1'] + " <> " + self.json[hashId]['relation'] + " <> " + self.json[hashId]['arg2']
 		for simple in self.json[hashId]['simpleContexts']:
-			self.strbuild += " " + simple['classification'] + " " + simple['text']
+			if simple['classification'] != "NOUN_BASED": # These tend to be duplicated in complex extractions
+				if simple['classification'] == "TEMPORAL_BEFORE":
+					if simple['text'].lower().startswith("after"): # remove after tokens
+						simple['text'] = simple['text'][len("after"):]
+				if simple['classification'] == "TEMPORAL_AFTER":
+					if simple['text'].lower().startswith("before"):
+							simple['text'] = simple['text'][len("before"):]
+				self.strbuild += " " + simple['classification'] + " " + simple['text']
 		for child in self.json[hashId]['linkedContexts']:
 			if not self.visited[child['targetID']]:
 				self.strbuild += " " + child['classification'] + " "
