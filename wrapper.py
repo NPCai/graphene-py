@@ -1,25 +1,24 @@
 import requests
 import re
-
-URL = "http://localhost:8080/relationExtraction/text"
+import json
 
 
 class GrapheneExtract(object):
 
-	def __init__(self, span):
-		payload = {
-		 "text": span,
-		 "doCoreference": "true", 
-		 "isolateSentences": "false", 
-		 "format": "FLAT_RESOLVED"
-		 }
-		r = requests.post(URL, json=payload)
-		self.json = {i['id']:i for i in r.json()['extractions']}
-		self.visited = {e:False for e in self.json} # (hash_id, bool is_used)
+	def __init__(self, blob):
+		try:
+			self.json = blob['sentences']
+			self.json = {k: v for d in [i['extractionMap'] for i in self.json] for k, v in d.items()} # merge dicts
+			self.visited = {e:False for e in self.json} # (hash_id, bool is_used)
+			self.failed = False
+		except json.decoder.JSONDecodeError:
+			self.failed = True
 
 	def linearize(self):
 		''' Depth-first search and append on the extracts '''
 		# TODO: reorder simple and linked contexts based on position in the origional sentence
+		if self.failed:
+			return ""
 		self.strbuild = ""
 		for hashId in self.json:
 			self.visit(hashId)
