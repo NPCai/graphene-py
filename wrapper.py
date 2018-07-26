@@ -46,4 +46,14 @@ class GrapheneExtract(object):
 				self.visit(child['targetID'])
 		self.strbuild += " ) "
 
+	def extractList(self):
+		''' Output a list of all extracts (used for simple 3-tuples OpenIE) '''
+		toReturn = []
+		for i in self.json:
+			if self.failed or self.json[i]['arg1'] == "" or self.json[i]['relation'] == "" or self.json[i]['arg2'] == "":
+				continue
+			toReturn.append(self.json[i]['arg1'] + " <> " + self.json[i]['relation'] + " <> " + self.json[i]['arg2'])
+		return toReturn
+
+
 
